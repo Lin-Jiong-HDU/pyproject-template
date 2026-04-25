@@ -1,5 +1,14 @@
 # Project: Python Template (AI-Assisted Development)
 
+## Repo Defaults
+
+- **Source layout**: Flat — source files live at the project root (no `src/` prefix)
+- **Test layout**: `tests/` directory, file names `test_<module>.py`
+- **Config source of truth**: `pyproject.toml` — ruff, pytest, and pyright are all configured there; `pyrightconfig.json` only sets the venv path
+- **Python version**: 3.13 (pinned in `.python-version` and `pyproject.toml`)
+- **Package manager**: `uv` — always use `uv run <cmd>`; never `pip install` directly
+- **Lock file**: `uv.lock` — commit it; run `uv sync --group dev` to reproduce the environment
+
 ## Tech Stack
 
 - **Python 3.13** with **uv** package manager
@@ -10,6 +19,9 @@
 ## Commands
 
 ```bash
+# Install dependencies
+uv sync --group dev
+
 # Format code
 uv run ruff format .
 
@@ -25,12 +37,54 @@ uv run pyright
 # Run tests
 uv run pytest
 
-# Run tests with coverage
-uv run pytest -v
+# Run specific test verbosely
+uv run pytest tests/test_foo.py::test_name -v
 
-# Full quality check (run before committing)
+# Full quality check (run before committing) — also: make ci
 uv run ruff format . && uv run ruff check . && uv run pyright && uv run pytest
 ```
+
+Use `make ci` as a one-command shortcut for the full quality check (see `Makefile`).
+
+## Debugging Protocol
+
+When fixing a bug or failing test, follow these steps **in order**:
+
+1. **Reproduce** — run the failing test or command first:
+   ```bash
+   uv run pytest tests/test_foo.py::test_name -v  # targeted
+   uv run pytest -v                                # full suite
+   ```
+2. **Locate** — read the error message, traceback, and only the directly relevant code; do not read unrelated files
+3. **Minimal fix** — change the fewest lines needed; no unrelated refactoring
+4. **Add regression test** — add or update a test that would have caught the bug; if a test already exists, explain why it did not catch it
+5. **Verify** — run the full quality gates and confirm all pass:
+   ```bash
+   uv run ruff format . && uv run ruff check . && uv run pyright && uv run pytest
+   ```
+
+## Change Policy
+
+- **Default: minimal changes** — only modify what is required to address the task
+- **No unrequested refactoring** — do not rename, reorganize, or restructure code unless explicitly asked
+- **Exceptions** — refactoring is allowed only when:
+  - It is required to make failing checks pass, OR
+  - The user explicitly requests it — state the reason in the response
+- **Suppress lint/type errors only as a last resort** — if you must use `# noqa` or `# type: ignore`, add a short inline comment explaining why
+- **Public API changes** — always update type hints, docstrings, and related tests together
+
+## What AI Should Include in Responses
+
+After any code change, always include:
+
+1. **What changed** — brief summary of files and lines modified
+2. **Commands to run** — the exact commands the user should run to verify:
+   ```bash
+   uv run pytest tests/test_foo.py -v   # expected: PASSED
+   uv run ruff check .                   # expected: All checks passed
+   ```
+3. **Expected output** — what a successful run looks like
+4. **Clarifying questions first** — if the task is ambiguous, ask 1–3 targeted questions before writing any code
 
 ## Coding Conventions
 

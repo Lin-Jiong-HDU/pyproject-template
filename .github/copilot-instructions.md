@@ -1,15 +1,36 @@
 # Python Project Template
 
+> Full AI protocol: see `CLAUDE.md`
+
 ## Tech Stack
 - Python 3.13 + uv (package manager)
 - Ruff (lint + format), pytest, pyright
 
+## Repo Defaults
+- Source layout: flat (files at root, no `src/`)
+- Config: `pyproject.toml` is the single source of truth
+- Package manager: `uv run <cmd>`; never `pip install` directly
+- Lock file: `uv.lock` — commit it; `uv sync --group dev` to reproduce
+
 ## Commands
+- Install: `uv sync --group dev`
 - Format: `uv run ruff format .`
 - Lint: `uv run ruff check .`
 - Type check: `uv run pyright`
 - Test: `uv run pytest`
-- Full check: `uv run ruff format . && uv run ruff check . && uv run pyright && uv run pytest`
+- Full check: `make ci`
+
+## Debugging Protocol
+1. Reproduce: `uv run pytest tests/test_foo.py::test_name -v`
+2. Locate: read error + traceback, relevant code only
+3. Minimal fix: fewest lines changed; no unrelated refactoring
+4. Add regression test
+5. Verify: `make ci`
+
+## Change Policy
+- Default: minimal changes only
+- No unrequested refactoring
+- Justify any `# noqa` or `# type: ignore` inline
 
 ## Rules
 - Type annotations required on all function signatures
