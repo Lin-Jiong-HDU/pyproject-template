@@ -1,5 +1,5 @@
 [project]
-name = "pyprojecttemplate"
+name = "pyproject-template"
 version = "0.1.0"
 description = "Python project template with AI-assisted development"
 readme = "README.md"
